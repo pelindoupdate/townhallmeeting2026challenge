@@ -1,5 +1,5 @@
 /** ========= CONFIG ========= */
-const API_URL = "https://script.google.com/macros/s/AKfycbxeGtJOWChD70QiUhpbdzXvVtgNSNDe8t28-it68Pu7lsfFHeVYlVB5XOxQ6gGKPdrM7Q/exec"; // <-- isi dari Apps Script deployment
+const API_URL = "https://script.google.com/macros/s/AKfycbwWK-qEC9BMxmjnDlwjCBMJkLYMFMBG2kOH_iZRD20xUqcMvp5t-0swltAzZneDCTWM4A/exec"; // <-- isi dari Apps Script deployment
 const VIDEO_ID = "https://youtu.be/yRSJhttHmqc";
 
 // Durasi video: 01:14:29:10  -> treat as 01:14:29
@@ -489,3 +489,4 @@ function escapeHtml(str){
   else goto(vLogin);
 
 })();
+
