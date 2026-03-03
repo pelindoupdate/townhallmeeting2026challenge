@@ -1,3 +1,6 @@
+console.log("app.js loaded ✅");
+alert("app.js loaded ✅"); // sementara buat debugging
+
 /** ========= CONFIG ========= */
 const API_URL = "https://script.google.com/macros/s/AKfycbx09vBniHE2vISKuPPCwZluhhgJET7ZK8_eDdmUnQiQfRV9dKdJ53QdB19Yz4GgL0hSAw/exec"; // <-- isi dari Apps Script deployment
 const VIDEO_ID = "https://youtu.be/yRSJhttHmqc";
@@ -583,6 +586,7 @@ function escapeHtml(str){
   else goto(vLogin);
 
 })();
+
 
 
 
