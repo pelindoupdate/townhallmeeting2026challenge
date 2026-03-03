@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Townhall Meeting 2026 Challenge</title>
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <img class="brand" src="assets/danantara.png" alt="Danantara" />
+    </div>
+
+    <div class="topbar-center">
+      <div class="kicker">Townhall Meeting 2026</div>
+      <div class="headline">Challenge: Key Message Direktur Utama</div>
+      <div class="subline">Nonton · Tulis Takeaways · Trivia · Leaderboard</div>
+    </div>
+
+    <div class="topbar-right">
+      <img class="brand" src="assets/pelindo.png" alt="Pelindo" />
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- LOGIN -->
+    <section id="view-login" class="card">
+      <div class="section-head">
+        <h2>Login Peserta</h2>
+        <p class="muted">Gunakan akun yang sudah didaftarkan panitia.</p>
+      </div>
+
+      <div class="form">
+        <label>User (NIP/Email)</label>
+        <input id="login-user" placeholder="contoh: 1987xxxx / nama@pelindo.co.id" autocomplete="username" />
+
+        <label>Password/Token</label>
+        <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" />
+
+        <button id="btn-login" class="btn primary">Masuk</button>
+        <div id="login-msg" class="msg"></div>
+      </div>
+    </section>
+
+    <!-- HUB -->
+    <section id="view-hub" class="grid hidden">
+      <!-- Video -->
+      <div class="card">
+        <div class="row between wrapline">
+          <div>
+            <h2>Video Arahan</h2>
+            <div id="user-badge" class="badge"></div>
+          </div>
+          <div class="row gap">
+            <button id="btn-open-leaderboard" class="btn ghost">Lihat Leaderboard</button>
+            <button id="btn-logout" class="btn ghost">Logout</button>
+          </div>
+        </div>
+
+        <div class="videoShell">
+          <!-- Ganti video src sesuai kebutuhan -->
+          <iframe id="yt"
+            src="https://www.youtube.com/embed/CQWlmsjef0Q?enablejsapi=1"
+            title="Video Arahan Dirut"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+
+        <div class="watchPanel">
+          <div class="watchStats">
+            <div class="stat">
+              <div class="muted">Waktu tonton tercatat</div>
+              <div class="big"><span id="watch-sec">0</span> <span class="unit">detik</span></div>
+            </div>
+            <div class="stat">
+              <div class="muted">Syarat quiz (60% durasi)</div>
+              <div class="big"><span id="watch-min">0</span> <span class="unit">detik</span></div>
+            </div>
+            <div class="stat">
+              <div class="muted">Status</div>
+              <div id="watch-status" class="pill">Belum memenuhi syarat</div>
+            </div>
+          </div>
+
+          <div class="progressWrap">
+            <div class="progress">
+              <div id="progress-fill" class="progressFill" style="width:0%"></div>
+            </div>
+            <div class="muted tiny" id="progress-text">0% dari durasi video</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Takeaways + CTA -->
+      <div class="card">
+        <div class="section-head">
+          <h2>Key Takeaways</h2>
+          <p class="muted">Tulis poin penting dari pesan Dirut. Idealnya 3 poin.</p>
+        </div>
+
+        <textarea id="takeaways" rows="10" placeholder="1) ...&#10;2) ...&#10;3) ..."></textarea>
+
+        <div class="row gap mt12">
+          <button id="btn-save-takeaways" class="btn primary">Simpan Takeaways</button>
+          <button id="btn-start-quiz" class="btn" disabled>Mulai Quiz</button>
+        </div>
+
+        <div id="hub-msg" class="msg"></div>
+
+        <div class="divider"></div>
+
+        <div class="hint">
+          <div class="hintTitle">Catatan</div>
+          <ul>
+            <li>Quiz terbuka setelah waktu tonton memenuhi syarat dan takeaways tersimpan.</li>
+            <li>Setelah submit skor, challenge akan terkunci dan kamu langsung diarahkan ke leaderboard.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section id="view-quiz" class="card hidden">
+      <div class="row between wrapline">
+        <div>
+          <h2>Trivia Quiz</h2>
+          <div class="muted tiny">Jawab cepat, tetap akurat. Timer per soal aktif.</div>
+        </div>
+        <div class="row gap">
+          <div class="pill">Timer: <b id="timer">20</b>s</div>
+          <button id="btn-cancel-quiz" class="btn ghost">Kembali</button>
+        </div>
+      </div>
+
+      <div id="q-box" class="qbox"></div>
+
+      <div class="row gap mt12">
+        <button id="btn-next" class="btn primary" disabled>Next</button>
+      </div>
+
+      <div id="quiz-msg" class="msg"></div>
+    </section>
+
+    <!-- LEADERBOARD (result + board) -->
+    <section id="view-leaderboard" class="card hidden">
+      <div class="row between wrapline">
+        <div>
+          <h2>Leaderboard</h2>
+          <div class="muted tiny">Fast Thinker ⚡ muncul pada skor yang sama dengan durasi tercepat (di Top 10).</div>
+        </div>
+        <div class="row gap">
+          <button id="btn-back-hub" class="btn ghost">Kembali</button>
+          <button id="btn-logout-2" class="btn ghost">Logout</button>
+        </div>
+      </div>
+
+      <div id="result-box" class="result hidden"></div>
+
+      <div class="lbGrid">
+        <div class="panel">
+          <div class="panelTitle">Top 5 Unit 🏆</div>
+          <div id="top5-units" class="chips"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panelTitle">Ranking Grup</div>
+          <div class="row gap mt8">
+            <button id="btn-group-unit" class="btn ghost btn-sm active">Per Unit</button>
+            <button id="btn-group-subunit" class="btn ghost btn-sm">Per Sub Unit</button>
+          </div>
+          <div id="group-board" class="table mt10"></div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="panelTitle">Top 10 Individual</div>
+      <div id="lb" class="table mt10"></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>© Pelindo Group · Challenge Corner · Townhall Meeting 2026</span>
+  </footer>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="app.js"></script>
+</body>
+</html>
