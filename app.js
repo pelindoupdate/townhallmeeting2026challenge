@@ -1,6 +1,6 @@
 /** ========= CONFIG ========= */
-const API_URL = "https://script.google.com/macros/s/AKfycbw7n1PsG712PmW6ioF6SpUa2Tey-SuvqPcqIom_tTbJ8NZQQ4b4pKw2eLZWapTVO_q8FQ/exec"; // <-- isi dari Apps Script deployment
-const VIDEO_ID = "TOWNHALL_2026_DIRUT";
+const API_URL = "https://script.google.com/macros/s/AKfycbxeGtJOWChD70QiUhpbdzXvVtgNSNDe8t28-it68Pu7lsfFHeVYlVB5XOxQ6gGKPdrM7Q/exec"; // <-- isi dari Apps Script deployment
+const VIDEO_ID = "https://youtu.be/yRSJhttHmqc";
 
 // Durasi video: 01:14:29:10  -> treat as 01:14:29
 const VIDEO_TOTAL_SECONDS = 1*3600 + 14*60 + 29; // 4469
@@ -487,4 +487,5 @@ function escapeHtml(str){
 (function boot(){
   if(sessionId && user) initHub();
   else goto(vLogin);
+
 })();
