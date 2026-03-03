@@ -49,6 +49,27 @@ elWatchMin.textContent = WATCH_MIN_SECONDS;
 function show(el){ el.classList.remove("hidden"); }
 function hide(el){ el.classList.add("hidden"); }
 
+window.addEventListener("error", (e) => {
+  const el = document.querySelector("#login-msg");
+  if (el) {
+    el.textContent = "JS Error: " + (e.message || e.error || "Unknown");
+    el.className = "msg bad";
+  } else {
+    alert("JS Error: " + (e.message || "Unknown"));
+  }
+});
+
+window.addEventListener("unhandledrejection", (e) => {
+  const el = document.querySelector("#login-msg");
+  const msg = (e.reason && e.reason.message) ? e.reason.message : String(e.reason || "Promise rejected");
+  if (el) {
+    el.textContent = "Promise Error: " + msg;
+    el.className = "msg bad";
+  } else {
+    alert("Promise Error: " + msg);
+  }
+});
+
 function setMsg(el, text, type=""){
   el.textContent = text || "";
   el.className = "msg " + (type || "");
@@ -489,5 +510,6 @@ function escapeHtml(str){
   else goto(vLogin);
 
 })();
+
 
 
