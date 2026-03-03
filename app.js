@@ -59,30 +59,103 @@ window.addEventListener("error", (e) => {
   }
 });
 
-window.addEventListener("unhandledrejection", (e) => {
-  const el = document.querySelector("#login-msg");
-  const msg = (e.reason && e.reason.message) ? e.reason.message : String(e.reason || "Promise rejected");
-  if (el) {
-    el.textContent = "Promise Error: " + msg;
-    el.className = "msg bad";
-  } else {
-    alert("Promise Error: " + msg);
+// window.addEventListener("unhandledrejection", (e) => {
+//   const el = document.querySelector("#login-msg");
+//   const msg = (e.reason && e.reason.message) ? e.reason.message : String(e.reason || "Promise rejected");
+//   if (el) {
+//     el.textContent = "Promise Error: " + msg;
+//     el.className = "msg bad";
+//   } else {
+//     alert("Promise Error: " + msg);
+//   }
+// });
+
+// function setMsg(el, text, type=""){
+//   el.textContent = text || "";
+//   el.className = "msg " + (type || "");
+// }
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.querySelector("#btn-login");
+  const msg = document.querySelector("#login-msg");
+  const uEl = document.querySelector("#login-user");
+  const pEl = document.querySelector("#login-pass");
+
+  if (!btn || !msg || !uEl || !pEl) {
+    alert("DOM tidak lengkap: cek id btn-login/login-msg/login-user/login-pass di index.html");
+    return;
   }
+
+  btn.addEventListener("click", async () => {
+    msg.textContent = "Memeriksa akun...";
+    msg.className = "msg";
+
+    const u = uEl.value.trim();
+    const p = pEl.value.trim();
+    if (!u || !p) {
+      msg.textContent = "Lengkapi user dan password/token.";
+      msg.className = "msg bad";
+      return;
+    }
+
+    const json = await api("login", { user: u, password: p, ua: navigator.userAgent });
+
+    if (!json || !json.ok) {
+      msg.textContent = "Login gagal: " + (json?.error || "Tidak ada respons / API gagal");
+      msg.className = "msg bad";
+      return;
+    }
+
+    msg.textContent = "Login berhasil ✅";
+    msg.className = "msg ok";
+
+    // simpan session
+    localStorage.setItem("session_id", json.session_id);
+    localStorage.setItem("user", JSON.stringify(json.user));
+
+    // lanjut hub
+    sessionId = json.session_id;
+    user = json.user;
+    initHub();
+  });
+
+  // BONUS: tekan Enter untuk login
+  [uEl, pEl].forEach(el => el.addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter") btn.click();
+  }));
 });
 
-function setMsg(el, text, type=""){
-  el.textContent = text || "";
-  el.className = "msg " + (type || "");
-}
+// async function api(action, params = {}) {
+//   const url = new URL(API_URL);
+//   url.searchParams.set("action", action);
+//   Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+
+//   const res = await fetch(url.toString(), { method: "GET" });
+//   const json = await res.json();
+//   return json;
+// }
 
 async function api(action, params = {}) {
-  const url = new URL(API_URL);
-  url.searchParams.set("action", action);
-  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+  try {
+    if (!API_URL || API_URL.includes("PASTE_URL")) {
+      return { ok: false, error: "API_URL belum diisi (masih placeholder)." };
+    }
 
-  const res = await fetch(url.toString(), { method: "GET" });
-  const json = await res.json();
-  return json;
+    const url = new URL(API_URL);
+    url.searchParams.set("action", action);
+    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+
+    const res = await fetch(url.toString(), { method: "GET", cache: "no-store" });
+    const text = await res.text();
+
+    let json;
+    try { json = JSON.parse(text); }
+    catch { return { ok: false, error: "Response bukan JSON: " + text.slice(0, 180) }; }
+
+    return json;
+  } catch (err) {
+    return { ok: false, error: "Fetch error: " + String(err) };
+  }
 }
 
 function goto(view){
@@ -510,6 +583,7 @@ function escapeHtml(str){
   else goto(vLogin);
 
 })();
+
 
 
 
