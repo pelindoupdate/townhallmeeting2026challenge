@@ -1,6 +1,16 @@
 console.log("app.js loaded ✅");
 alert("app.js loaded ✅"); // sementara buat debugging
 
+window.addEventListener("error", (e) => {
+  const el = document.querySelector("#login-msg");
+  if (el) {
+    el.textContent = "JS Error: " + (e.message || e.error || "Unknown");
+    el.className = "msg bad";
+  } else {
+    alert("JS Error: " + (e.message || "Unknown"));
+  }
+});
+
 /** ========= CONFIG ========= */
 const API_URL = "https://script.google.com/macros/s/AKfycbx09vBniHE2vISKuPPCwZluhhgJET7ZK8_eDdmUnQiQfRV9dKdJ53QdB19Yz4GgL0hSAw/exec"; // <-- isi dari Apps Script deployment
 const VIDEO_ID = "https://youtu.be/yRSJhttHmqc";
@@ -52,15 +62,7 @@ elWatchMin.textContent = WATCH_MIN_SECONDS;
 function show(el){ el.classList.remove("hidden"); }
 function hide(el){ el.classList.add("hidden"); }
 
-window.addEventListener("error", (e) => {
-  const el = document.querySelector("#login-msg");
-  if (el) {
-    el.textContent = "JS Error: " + (e.message || e.error || "Unknown");
-    el.className = "msg bad";
-  } else {
-    alert("JS Error: " + (e.message || "Unknown"));
-  }
-});
+
 
 // window.addEventListener("unhandledrejection", (e) => {
 //   const el = document.querySelector("#login-msg");
@@ -586,6 +588,7 @@ function escapeHtml(str){
   else goto(vLogin);
 
 })();
+
 
 
 
