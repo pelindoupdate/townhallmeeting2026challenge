@@ -4,101 +4,112 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Townhall Meeting 2026 Challenge</title>
-  <link rel="stylesheet" href="app.css" />
+  <link rel="stylesheet" href="app.css?v=7" />
 </head>
 <body>
+  <!-- Background -->
+  <div class="bg">
+    <div class="bg-image"></div>
+    <div class="bg-overlay"></div>
+  </div>
+
   <header class="topbar">
-    <div class="topbar-left">
-      <img class="brand" src="assets/danantara.png" alt="Danantara" />
+    <div class="brandLeft">
+      <img src="assets/danantara.png" class="logo" alt="Danantara" />
     </div>
 
-    <div class="topbar-center">
+    <div class="titleBlock">
       <div class="kicker">Townhall Meeting 2026</div>
-      <div class="headline">Challenge: Key Message Direktur Utama</div>
-      <div class="subline">Nonton · Tulis Takeaways · Trivia · Leaderboard</div>
+      <div class="title">Challenge: Key Message Direktur Utama</div>
+      <div class="subtitle">Tonton · Tulis Takeaways · Trivia · Leaderboard</div>
     </div>
 
-    <div class="topbar-right">
-      <img class="brand" src="assets/pelindo.png" alt="Pelindo" />
+    <div class="brandRight">
+      <img src="assets/pelindo.png" class="logo" alt="Pelindo" />
     </div>
   </header>
 
   <main class="wrap">
-    <!-- LOGIN -->
-    <section id="view-login" class="card">
-      <div class="section-head">
+    <!-- LOGIN VIEW -->
+    <section id="view-login" class="panel glass">
+      <div class="panelHead">
         <h2>Login Peserta</h2>
-        <p class="muted">Gunakan akun yang sudah didaftarkan panitia.</p>
+        <p>Masuk menggunakan akun yang sudah didaftarkan panitia (user_id / email / NIPP).</p>
       </div>
 
-      <div class="form">
-        <label>User (NIP/Email)</label>
-        <input id="login-user" placeholder="contoh: 1987xxxx / nama@pelindo.co.id" autocomplete="username" />
+      <div class="formGrid">
+        <div class="field">
+          <label>User</label>
+          <input id="login-user" placeholder="contoh: 1987xxxx / nama@pelindo.co.id" autocomplete="username" />
+        </div>
+        <div class="field">
+          <label>Password / Token</label>
+          <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
 
-        <label>Password/Token</label>
-        <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" />
-
-        <button id="btn-login" class="btn primary">Login</button>
+        <button id="btn-login" class="btn primary">Masuk</button>
         <div id="login-msg" class="msg"></div>
+
+        <div class="miniNote">
+          <div class="dot"></div>
+          <div>Jika terjadi error, pesan akan tampil di sini (no silent fail).</div>
+        </div>
       </div>
     </section>
 
-    <!-- HUB -->
+    <!-- HUB VIEW -->
     <section id="view-hub" class="grid hidden">
-      <!-- Video -->
-      <div class="card">
+      <!-- Video Card -->
+      <section class="panel glass">
         <div class="row between wrapline">
           <div>
             <h2>Video Arahan</h2>
-            <div id="user-badge" class="badge"></div>
+            <div id="user-badge" class="pill"></div>
           </div>
           <div class="row gap">
-            <button id="btn-open-leaderboard" class="btn ghost">Lihat Leaderboard</button>
+            <button id="btn-open-leaderboard" class="btn ghost">Leaderboard</button>
             <button id="btn-logout" class="btn ghost">Logout</button>
           </div>
         </div>
 
         <div class="videoShell">
-          <!-- Ganti video src sesuai kebutuhan -->
+          <!-- Update VIDEO_ID di app.js; src akan di-set oleh JS -->
           <iframe
             id="yt"
-            src="https://www.youtube.com/embed/yRSJhttHmqc?enablejsapi=1&playsinline=1&rel=0&origin=https://pelindoupdate.github.io"
             title="Video Arahan Dirut"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen></iframe>
         </div>
 
-        <div class="watchPanel">
+        <div class="watchBar">
           <div class="watchStats">
             <div class="stat">
-              <div class="muted">Waktu tonton tercatat</div>
-              <div class="big"><span id="watch-sec">0</span> <span class="unit">detik</span></div>
+              <div class="statLabel">Waktu tonton tercatat</div>
+              <div class="statValue"><span id="watch-sec">0</span> <small>detik</small></div>
             </div>
             <div class="stat">
-              <div class="muted">Syarat quiz (60% durasi)</div>
-              <div class="big"><span id="watch-min">0</span> <span class="unit">detik</span></div>
+              <div class="statLabel">Syarat (60% durasi)</div>
+              <div class="statValue"><span id="watch-min">0</span> <small>detik</small></div>
             </div>
             <div class="stat">
-              <div class="muted">Status</div>
-              <div id="watch-status" class="pill">Belum memenuhi syarat</div>
+              <div class="statLabel">Status</div>
+              <div id="watch-status" class="tag">Belum memenuhi syarat</div>
             </div>
           </div>
 
-          <div class="progressWrap">
-            <div class="progress">
-              <div id="progress-fill" class="progressFill" style="width:0%"></div>
-            </div>
-            <div class="muted tiny" id="progress-text">0% dari durasi video</div>
+          <div class="progress">
+            <div id="progress-fill" class="progressFill" style="width:0%"></div>
           </div>
+          <div class="progressText" id="progress-text">0% dari durasi video</div>
         </div>
-      </div>
+      </section>
 
-      <!-- Takeaways + CTA -->
-      <div class="card">
-        <div class="section-head">
+      <!-- Takeaways Card -->
+      <section class="panel glass">
+        <div class="panelHead">
           <h2>Key Takeaways</h2>
-          <p class="muted">Tulis poin penting dari pesan Dirut. Idealnya 3 poin.</p>
+          <p>Tulis poin penting dari pesan Dirut. Idealnya 3 poin ringkas namun kuat.</p>
         </div>
 
         <textarea id="takeaways" rows="10" placeholder="1) ...&#10;2) ...&#10;3) ..."></textarea>
@@ -110,24 +121,22 @@
 
         <div id="hub-msg" class="msg"></div>
 
-        <div class="divider"></div>
-
-        <div class="hint">
-          <div class="hintTitle">Catatan</div>
+        <div class="tips">
+          <div class="tipsHead">Aturan Main</div>
           <ul>
-            <li>Quiz terbuka setelah waktu tonton memenuhi syarat dan takeaways tersimpan.</li>
-            <li>Setelah submit skor, challenge akan terkunci dan kamu langsung diarahkan ke leaderboard.</li>
+            <li>Quiz terbuka setelah memenuhi syarat tonton (60%) dan takeaways tersimpan.</li>
+            <li>Setelah submit skor, challenge otomatis terkunci dan kamu diarahkan ke leaderboard.</li>
           </ul>
         </div>
-      </div>
+      </section>
     </section>
 
-    <!-- QUIZ -->
-    <section id="view-quiz" class="card hidden">
+    <!-- QUIZ VIEW -->
+    <section id="view-quiz" class="panel glass hidden">
       <div class="row between wrapline">
         <div>
           <h2>Trivia Quiz</h2>
-          <div class="muted tiny">Jawab cepat, tetap akurat. Timer per soal aktif.</div>
+          <div class="subtle">Jawab cepat, tetap akurat. Timer per soal aktif.</div>
         </div>
         <div class="row gap">
           <div class="pill">Timer: <b id="timer">20</b>s</div>
@@ -144,12 +153,12 @@
       <div id="quiz-msg" class="msg"></div>
     </section>
 
-    <!-- LEADERBOARD (result + board) -->
-    <section id="view-leaderboard" class="card hidden">
+    <!-- LEADERBOARD VIEW -->
+    <section id="view-leaderboard" class="panel glass hidden">
       <div class="row between wrapline">
         <div>
           <h2>Leaderboard</h2>
-          <div class="muted tiny">Fast Thinker ⚡ muncul pada skor yang sama dengan durasi tercepat (di Top 10).</div>
+          <div class="subtle">⚡ Fast Thinker = durasi tercepat pada skor yang sama (di Top 10).</div>
         </div>
         <div class="row gap">
           <button id="btn-back-hub" class="btn ghost">Kembali</button>
@@ -160,13 +169,13 @@
       <div id="result-box" class="result hidden"></div>
 
       <div class="lbGrid">
-        <div class="panel">
-          <div class="panelTitle">Top 5 Unit 🏆</div>
+        <div class="glassMini">
+          <div class="miniTitle">Top 5 Unit 🏆</div>
           <div id="top5-units" class="chips"></div>
         </div>
 
-        <div class="panel">
-          <div class="panelTitle">Ranking Grup</div>
+        <div class="glassMini">
+          <div class="miniTitle">Ranking Grup</div>
           <div class="row gap mt8">
             <button id="btn-group-unit" class="btn ghost btn-sm active">Per Unit</button>
             <button id="btn-group-subunit" class="btn ghost btn-sm">Per Sub Unit</button>
@@ -177,22 +186,16 @@
 
       <div class="divider"></div>
 
-      <div class="panelTitle">Top 10 Individual</div>
+      <div class="miniTitle">Top 10 Individual</div>
       <div id="lb" class="table mt10"></div>
     </section>
   </main>
 
-  <footer class="foot">
+  <footer class="footer">
     <span>© Pelindo Group · Challenge Corner · Townhall Meeting 2026</span>
   </footer>
 
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=7"></script>
 </body>
-
 </html>
-
-
-
-
-
