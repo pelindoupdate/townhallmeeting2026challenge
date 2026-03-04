@@ -270,7 +270,7 @@ async function initHub(){
   if(!sessionId || !user){ goto(vLogin); return; }
 
   const nipp = user.nipp ? `NIPP ${user.nipp}` : "";
-  const meta = [nipp, user.unit, user.sub_unit].filter(Boolean).join(" · ");
+  const meta = [user.unit].filter(Boolean).join(" · ");
   userBadge.textContent = `${user.name}${meta ? " · " + meta : ""}`;
 
   goto(vHub);
@@ -592,3 +592,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     goto(vLogin);
   }
 });
+
