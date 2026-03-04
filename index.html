@@ -4,10 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Townhall Meeting 2026 Challenge</title>
-  <link rel="stylesheet" href="app.css?v=7" />
+  <link rel="stylesheet" href="app.css?v=9" />
 </head>
 <body>
-  <!-- Background -->
   <div class="bg">
     <div class="bg-image"></div>
     <div class="bg-overlay"></div>
@@ -21,7 +20,7 @@
     <div class="titleBlock">
       <div class="kicker">Townhall Meeting 2026</div>
       <div class="title">Challenge: Key Message Direktur Utama</div>
-      <div class="subtitle">Tonton · Tulis Takeaways · Trivia · Leaderboard</div>
+      <div class="subtitle">Tonton · Tulis Takeaways · Trivia (3x) · Leaderboard</div>
     </div>
 
     <div class="brandRight">
@@ -30,11 +29,11 @@
   </header>
 
   <main class="wrap">
-    <!-- LOGIN VIEW -->
+    <!-- LOGIN -->
     <section id="view-login" class="panel glass">
       <div class="panelHead">
         <h2>Login Peserta</h2>
-        <p>Masuk menggunakan akun yang sudah didaftarkan panitia (user_id / email / NIPP).</p>
+        <p>Masuk menggunakan akun yang didaftarkan panitia (user_id / email / NIPP).</p>
       </div>
 
       <div class="formGrid">
@@ -52,19 +51,19 @@
 
         <div class="miniNote">
           <div class="dot"></div>
-          <div>Jika terjadi error, pesan akan tampil di sini (no silent fail).</div>
+          <div>Jika ada error, pesan akan tampil di sini.</div>
         </div>
       </div>
     </section>
 
-    <!-- HUB VIEW -->
+    <!-- HUB -->
     <section id="view-hub" class="grid hidden">
-      <!-- Video Card -->
       <section class="panel glass">
         <div class="row between wrapline">
           <div>
             <h2>Video Arahan</h2>
             <div id="user-badge" class="pill"></div>
+            <div id="attempt-badge" class="pill subtlePill">Quiz attempt: 0/3</div>
           </div>
           <div class="row gap">
             <button id="btn-open-leaderboard" class="btn ghost">Leaderboard</button>
@@ -73,7 +72,6 @@
         </div>
 
         <div class="videoShell">
-          <!-- Update VIDEO_ID di app.js; src akan di-set oleh JS -->
           <iframe
             id="yt"
             title="Video Arahan Dirut"
@@ -105,11 +103,10 @@
         </div>
       </section>
 
-      <!-- Takeaways Card -->
       <section class="panel glass">
         <div class="panelHead">
           <h2>Key Takeaways</h2>
-          <p>Tulis poin penting dari pesan Dirut. Idealnya 3 poin ringkas namun kuat.</p>
+          <p>Tulis poin penting dari pesan Dirut. Minimal 3 poin ringkas.</p>
         </div>
 
         <textarea id="takeaways" rows="10" placeholder="1) ...&#10;2) ...&#10;3) ..."></textarea>
@@ -125,18 +122,20 @@
           <div class="tipsHead">Aturan Main</div>
           <ul>
             <li>Quiz terbuka setelah memenuhi syarat tonton (60%) dan takeaways tersimpan.</li>
-            <li>Setelah submit skor, challenge otomatis terkunci dan kamu diarahkan ke leaderboard.</li>
+            <li>Maksimal 3 kali attempt. Leaderboard memakai skor terbaik.</li>
+            <li>Skor: easy=5, medium=10, hard=20. Bonus streak tersedia.</li>
           </ul>
         </div>
       </section>
     </section>
 
-    <!-- QUIZ VIEW -->
+    <!-- QUIZ -->
     <section id="view-quiz" class="panel glass hidden">
       <div class="row between wrapline">
         <div>
           <h2>Trivia Quiz</h2>
           <div class="subtle">Jawab cepat, tetap akurat. Timer per soal aktif.</div>
+          <div id="quiz-attempt" class="pill subtlePill">Attempt: -</div>
         </div>
         <div class="row gap">
           <div class="pill">Timer: <b id="timer">20</b>s</div>
@@ -153,12 +152,12 @@
       <div id="quiz-msg" class="msg"></div>
     </section>
 
-    <!-- LEADERBOARD VIEW -->
+    <!-- LEADERBOARD -->
     <section id="view-leaderboard" class="panel glass hidden">
       <div class="row between wrapline">
         <div>
           <h2>Leaderboard</h2>
-          <div class="subtle">⚡ Fast Thinker = durasi tercepat pada skor yang sama (di Top 10).</div>
+          <div class="subtle">⚡ Fast Thinker = durasi tercepat pada skor yang sama (Top 10).</div>
         </div>
         <div class="row gap">
           <button id="btn-back-hub" class="btn ghost">Kembali</button>
@@ -170,7 +169,7 @@
 
       <div class="lbGrid">
         <div class="glassMini">
-          <div class="miniTitle">Top 5 Unit 🏆</div>
+          <div class="miniTitle">Top 5 Unit 🏆 (Top Score)</div>
           <div id="top5-units" class="chips"></div>
         </div>
 
@@ -180,13 +179,14 @@
             <button id="btn-group-unit" class="btn ghost btn-sm active">Per Unit</button>
             <button id="btn-group-subunit" class="btn ghost btn-sm">Per Sub Unit</button>
           </div>
+          <div class="subtle mt8">Completion % = jumlah yang sudah submit / total active user di grup</div>
           <div id="group-board" class="table mt10"></div>
         </div>
       </div>
 
       <div class="divider"></div>
 
-      <div class="miniTitle">Top 10 Individual</div>
+      <div class="miniTitle">Top 10 Individual (Best Attempt)</div>
       <div id="lb" class="table mt10"></div>
     </section>
   </main>
@@ -196,6 +196,6 @@
   </footer>
 
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="app.js?v=7"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>
