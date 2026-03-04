@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Townhall Meeting 2026 Challenge</title>
+  <title>Challenge Corner 2026</title>
   <link rel="stylesheet" href="app.css?v=9" />
 </head>
 <body>
@@ -18,9 +18,9 @@
     </div>
 
     <div class="titleBlock">
-      <div class="kicker">Townhall Meeting 2026</div>
-      <div class="title">Challenge: Key Message Direktur Utama</div>
-      <div class="subtitle">Tonton · Tulis Takeaways · Trivia (3x) · Leaderboard</div>
+      <div class="kicker">Challenge Corner 2026</div>
+      <div class="title">Townhall Meeting 2026 : Mengenal Lebih Dekat Direksi Pelindo</div>
+      <div class="subtitle">Tonton Video · Tulis Key Takeaways · Jawab Trivia Quiz (3x) · Memimpin Leaderboard</div>
     </div>
 
     <div class="brandRight">
@@ -32,8 +32,8 @@
     <!-- LOGIN -->
     <section id="view-login" class="panel glass">
       <div class="panelHead">
-        <h2>Login Peserta</h2>
-        <p>Masuk menggunakan akun yang didaftarkan panitia (user_id / email / NIPP).</p>
+        <h2>Login</h2>
+        <p>Masuk menggunakan akun yang terdaftar (user_id / email / NIPP).</p>
       </div>
 
       <div class="formGrid">
@@ -42,7 +42,7 @@
           <input id="login-user" placeholder="contoh: 1987xxxx / nama@pelindo.co.id" autocomplete="username" />
         </div>
         <div class="field">
-          <label>Password / Token</label>
+          <label>Password </label>
           <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" />
         </div>
 
@@ -61,7 +61,7 @@
       <section class="panel glass">
         <div class="row between wrapline">
           <div>
-            <h2>Video Arahan</h2>
+            <h2>TOWNHALL MEETING 2026 : MENGENAL LEBIH DEKAT DIREKSI PELINDO</h2>
             <div id="user-badge" class="pill"></div>
             <div id="attempt-badge" class="pill subtlePill">Quiz attempt: 0/3</div>
           </div>
@@ -74,7 +74,7 @@
         <div class="videoShell">
           <iframe
             id="yt"
-            title="Video Arahan Dirut"
+            title="Video Arahan Direktur Utama Pelindo"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen></iframe>
@@ -99,20 +99,20 @@
           <div class="progress">
             <div id="progress-fill" class="progressFill" style="width:0%"></div>
           </div>
-          <div class="progressText" id="progress-text">0% dari durasi video</div>
+          <div class="progressText" id="progress-text">0% dari total durasi video</div>
         </div>
       </section>
 
       <section class="panel glass">
         <div class="panelHead">
           <h2>Key Takeaways</h2>
-          <p>Tulis poin penting dari pesan Dirut. Minimal 3 poin ringkas.</p>
+          <p>Tulis poin penting dari Arahan Direktur Utama Pelindo tersebut. Minimal 3 key takeaways.</p>
         </div>
 
         <textarea id="takeaways" rows="10" placeholder="1) ...&#10;2) ...&#10;3) ..."></textarea>
 
         <div class="row gap mt12">
-          <button id="btn-save-takeaways" class="btn primary">Simpan Takeaways</button>
+          <button id="btn-save-takeaways" class="btn primary">Simpan Key Takeaways</button>
           <button id="btn-start-quiz" class="btn" disabled>Mulai Quiz</button>
         </div>
 
@@ -121,9 +121,10 @@
         <div class="tips">
           <div class="tipsHead">Aturan Main</div>
           <ul>
-            <li>Quiz terbuka setelah memenuhi syarat tonton (60%) dan takeaways tersimpan.</li>
-            <li>Maksimal 3 kali attempt. Leaderboard memakai skor terbaik.</li>
-            <li>Skor: easy=5, medium=10, hard=20. Bonus streak tersedia.</li>
+            <li>Quiz akan terbuka setelah memenuhi syarat yaitu durasi menonton video minimal (60%) dari total durasi video dan menuliskan key takeaways.</li>
+            <li>Setiap peserta diberikan kesempatan maksimal 3 kali attempt untuk mengerjakan Quiz. Leaderboard akan menggunakan skor terbaik.</li>
+            <li>Ketentuan pemberian skor berdasarkan level soal: easy=5, medium=10, hard=20. Bonus streak tersedia.</li>
+            <li>Peserta akan diberikan Bonus skor apabila menjawab dengan benar beberapa pertanyaan berturut-turut</li>
           </ul>
         </div>
       </section>
@@ -134,7 +135,7 @@
       <div class="row between wrapline">
         <div>
           <h2>Trivia Quiz</h2>
-          <div class="subtle">Jawab cepat, tetap akurat. Timer per soal aktif.</div>
+          <div class="subtle">Jawab dengan cepat, tetap akurat. Timer per soal aktif.</div>
           <div id="quiz-attempt" class="pill subtlePill">Attempt: -</div>
         </div>
         <div class="row gap">
@@ -156,7 +157,7 @@
     <section id="view-leaderboard" class="panel glass hidden">
       <div class="row between wrapline">
         <div>
-          <h2>Leaderboard</h2>
+          <h2>LEADERBOARD</h2>
           <div class="subtle">⚡ Fast Thinker = durasi tercepat pada skor yang sama (Top 10).</div>
         </div>
         <div class="row gap">
@@ -192,10 +193,11 @@
   </main>
 
   <footer class="footer">
-    <span>© Pelindo Group · Challenge Corner · Townhall Meeting 2026</span>
+    <span>© Change Management PT Pelabuhan Indonesia (Persero) · 2026</span>
   </footer>
 
   <script src="https://www.youtube.com/iframe_api"></script>
   <script src="app.js?v=9"></script>
 </body>
 </html>
+
