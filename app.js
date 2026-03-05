@@ -1,32 +1,37 @@
-
-
 /**
- * app.js v9
- * Update: 3 attempts, status attempt, best score leaderboard, group completion% + top score,
- * scoring by difficulty + streak bonuses handled server-side.
+ * app.js v10 - OneDrive/SharePoint video (HTML5 <video>)
+ * - Track watched seconds via unique second stamps while playing (anti-skip ringan)
+ * - Send incremental add_seconds to Apps Script action=log_watch
  */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwcanb_NpIe1ST7VTbzkdhoTAY192baRJehDWoCf9Y9jlD0lSYMhIzeEV0FiQCPTW7gXg/exec";
-const YT_VIDEO_ID = "yRSJhttHmqc"; // pastikan embed diizinkan
+const API_URL = "https://script.google.com/macros/s/AKfycbx09vBniHE2vISKuPPCwZluhhgJET7ZK8_eDdmUnQiQfRV9dKdJ53QdB19Yz4GgL0hSAw/exec";
+
+// Share link (viewer). Akan dicoba jadi direct stream url sederhana.
+const ONEDRIVE_SHARE_URL =
+  "https://pelindo2-my.sharepoint.com/:v:/g/personal/pmo_pelindo_co_id/IQA7HhaxUZQSSJQ5Yck7x9PEAY8ojY5w6x2HADIY57Btw0A?e=ASU4xN&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D";
 
 const QUIZ_QUESTIONS = 10;
 const QUIZ_TIMER_SECONDS = 20;
-const WATCH_BATCH_SECONDS = 5;
+
+// watch batching
+const WATCH_SEND_EVERY_SECONDS = 5;
 
 let sessionId = localStorage.getItem("session_id") || "";
 let user = safeJson(localStorage.getItem("user"));
 let takeawaysSaved = false;
 
-let ytPlayer = null;
+// status cache
 let statusCache = null;
 let lastStatusAt = 0;
 let watchSeconds = Number(localStorage.getItem("watch_seconds") || 0);
+let attemptNo = 0;
 
-// robust watch polling
-let watchPoll = null;
-let lastPlayerTime = null;
-let pendingAddSeconds = 0;
-let lastSendAt = 0;
+// video tracking
+let videoEl = null;
+let watchedSecondSet = new Set(); // unique seconds watched in this page session
+let lastTime = null;
+let pendingAdd = 0;
+let sendTick = null;
 
 // quiz state
 let quiz = [];
@@ -35,49 +40,28 @@ let answers = [];
 let timerInt = null;
 let qTimer = QUIZ_TIMER_SECONDS;
 let quizStartTs = 0;
-let attemptNo = 0;
 
 let activeGroupBy = "unit";
 
 /** error trap */
 window.addEventListener("error", (e) => {
-  const el = $("#login-msg") || $("#hub-msg") || $("#quiz-msg");
+  const el = $("#login-msg") || $("#hub-msg") || $("#quiz-msg") || $("#video-msg");
   if (el) { el.textContent = "JS Error: " + (e.message || "Unknown"); el.className = "msg bad"; }
   console.error(e);
 });
 window.addEventListener("unhandledrejection", (e) => {
-  const el = $("#login-msg") || $("#hub-msg") || $("#quiz-msg");
+  const el = $("#login-msg") || $("#hub-msg") || $("#quiz-msg") || $("#video-msg");
   const msg = e.reason?.message ? e.reason.message : String(e.reason || "Unknown");
   if (el) { el.textContent = "Promise Error: " + msg; el.className = "msg bad"; }
   console.error(e);
 });
 
 /** DOM */
-const vLogin = $("#view-login");
-const vHub = $("#view-hub");
-const vQuiz = $("#view-quiz");
-const vLB = $("#view-leaderboard");
-
-const loginMsg = $("#login-msg");
-const hubMsg = $("#hub-msg");
-const quizMsg = $("#quiz-msg");
-
-const elWatchSec = $("#watch-sec");
-const elWatchMin = $("#watch-min");
-const elWatchStatus = $("#watch-status");
-const elProgressFill = $("#progress-fill");
-const elProgressText = $("#progress-text");
-
-const userBadge = $("#user-badge");
-const attemptBadge = $("#attempt-badge");
-const quizAttemptPill = $("#quiz-attempt");
-
-/** helpers */
 function $(sel){ return document.querySelector(sel); }
 function safeJson(str){ try{ return str ? JSON.parse(str) : null; } catch { return null; } }
 function show(el){ el.classList.remove("hidden"); }
 function hide(el){ el.classList.add("hidden"); }
-function goto(view){ [vLogin,vHub,vQuiz,vLB].forEach(hide); show(view); }
+function goto(view){ [$("#view-login"),$("#view-hub"),$("#view-quiz"),$("#view-leaderboard")].forEach(hide); show(view); }
 function setMsg(el, text, type=""){ if(!el) return; el.textContent = text || ""; el.className = "msg " + (type||""); }
 function escapeHtml(str){
   return String(str ?? "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
@@ -126,31 +110,34 @@ function updateAttemptUI(st){
   const next = Number(st.attempt_next || (used+1));
   const locked = !!st.locked;
 
-  attemptBadge.textContent = locked ? `Quiz attempt: ${used}/${max} (LOCKED)` : `Quiz attempt: ${used}/${max} (next: ${next})`;
-  quizAttemptPill.textContent = `Attempt: ${next} / ${max}`;
+  $("#attempt-badge").textContent = locked ? `Quiz attempt: ${used}/${max} (LOCKED)` : `Quiz attempt: ${used}/${max} (next: ${next})`;
+  $("#quiz-attempt").textContent = `Attempt: ${next} / ${max}`;
+
+  const btn = $("#btn-start-quiz");
+  if(st.locked){
+    btn.disabled = true;
+    btn.textContent = "Quiz sudah mencapai 3 attempt";
+  } else {
+    btn.textContent = "Mulai Quiz";
+  }
 }
 
 function updateWatchUI(st){
   const total = Number(st?.video_total_seconds || 0);
   const minW  = Number(st?.min_watch_seconds || 0);
 
-  elWatchSec.textContent = String(watchSeconds);
-  elWatchMin.textContent = String(minW);
+  $("#watch-sec").textContent = String(watchSeconds);
+  $("#watch-min").textContent = String(minW);
 
   const pct = toPercent(watchSeconds, total);
-  elProgressFill.style.width = pct + "%";
-  elProgressText.textContent = `${pct}% dari durasi video`;
+  $("#progress-fill").style.width = pct + "%";
+  $("#progress-text").textContent = `${pct}% dari total durasi video`;
 
   const qualified = !!st?.qualified;
-  elWatchStatus.textContent = qualified ? "Syarat nonton terpenuhi ✅" : "Belum memenuhi syarat";
-  elWatchStatus.style.borderColor = qualified ? "rgba(52,211,153,.55)" : "rgba(255,255,255,.12)";
-  elWatchStatus.style.color = qualified ? "rgba(52,211,153,.95)" : "rgba(255,255,255,.78)";
-}
-
-function setQuizButtonLocked(){
-  const btn = $("#btn-start-quiz");
-  btn.disabled = true;
-  btn.textContent = "Quiz sudah mencapai 3 attempt";
+  const tag = $("#watch-status");
+  tag.textContent = qualified ? "Syarat nonton terpenuhi ✅" : "Belum memenuhi syarat";
+  tag.style.borderColor = qualified ? "rgba(52,211,153,.55)" : "rgba(255,255,255,.12)";
+  tag.style.color = qualified ? "rgba(52,211,153,.95)" : "rgba(255,255,255,.78)";
 }
 
 async function unlockQuizIfReady(){
@@ -162,87 +149,119 @@ async function unlockQuizIfReady(){
   updateAttemptUI(st);
 
   if(st.locked){
-    setQuizButtonLocked();
+    btn.disabled = true;
     return;
   }
+
   btn.disabled = !(st.qualified && takeawaysSaved);
-  btn.textContent = "Mulai Quiz";
 }
 
-/** youtube iframe */
-function setYouTubeSrc(){
-  const iframe = $("#yt");
-  const origin = encodeURIComponent(location.origin);
-  iframe.src = `https://www.youtube.com/embed/${YT_VIDEO_ID}?enablejsapi=1&playsinline=1&rel=0&origin=${origin}`;
+/** ====== OneDrive video ====== */
+function buildMaybeDirectUrl(shareUrl){
+  // Banyak tenant OneDrive/SharePoint menerima &download=1 untuk direct file.
+  // Jika gagal, kamu perlu pakai "Embed code" atau direct mp4 link.
+  const u = new URL(shareUrl);
+  u.searchParams.set("download", "1");
+  return u.toString();
 }
 
-window.onYouTubeIframeAPIReady = function(){
-  setYouTubeSrc();
-  ytPlayer = new YT.Player("yt", { events: { onStateChange: onYtStateChange } });
-};
+function initVideo(){
+  videoEl = $("#video");
+  const srcEl = $("#video-src");
+  const msgEl = $("#video-msg");
 
-/** watch tracking robust */
-function onYtStateChange(e){
-  if(e.data === 1) startWatchPoll();
-  else stopWatchPoll(true);
+  if(!videoEl || !srcEl){
+    console.warn("Video DOM not found");
+    return;
+  }
+
+  // Set source
+  const candidate = buildMaybeDirectUrl(ONEDRIVE_SHARE_URL);
+  srcEl.src = candidate;
+  videoEl.load();
+
+  setMsg(msgEl, "", "");
+
+  // Start sending batched watch logs when playing
+  videoEl.addEventListener("play", () => startSendTick());
+  videoEl.addEventListener("pause", () => flushSend());
+  videoEl.addEventListener("ended", () => flushSend());
+
+  // detect error
+  videoEl.addEventListener("error", () => {
+    setMsg(msgEl, "Video gagal dimuat. Link kemungkinan bukan direct mp4. Ambil Embed code / direct link file mp4 dari SharePoint.", "bad");
+  });
+
+  // Track unique seconds while playing
+  videoEl.addEventListener("timeupdate", () => {
+    if(!sessionId) return;
+    if(videoEl.paused || videoEl.seeking) return;
+
+    const t = videoEl.currentTime || 0;
+
+    // Anti-seek ringan: jika loncat jauh, jangan dihitung pada tick ini
+    if(lastTime != null && Math.abs(t - lastTime) > 1.75){
+      lastTime = t;
+      return;
+    }
+    lastTime = t;
+
+    const sec = Math.floor(t);
+    if(sec < 0) return;
+    if(!watchedSecondSet.has(sec)){
+      watchedSecondSet.add(sec);
+      pendingAdd += 1;
+    }
+  });
+
+  // Optional: show duration from metadata (untuk debugging)
+  videoEl.addEventListener("loadedmetadata", () => {
+    const d = Number(videoEl.duration || 0);
+    if(d && d > 1){
+      setMsg(msgEl, "Video siap diputar ✅", "ok");
+    }
+  });
 }
 
-function startWatchPoll(){
-  if(watchPoll) return;
-  if(!ytPlayer || typeof ytPlayer.getCurrentTime !== "function") return;
-
-  lastPlayerTime = ytPlayer.getCurrentTime();
-  lastSendAt = Date.now();
-
-  watchPoll = setInterval(async () => {
+function startSendTick(){
+  if(sendTick) return;
+  sendTick = setInterval(async () => {
     try{
-      const state = ytPlayer.getPlayerState();
-      if(state !== 1) return;
-
-      const t = ytPlayer.getCurrentTime();
-      if(lastPlayerTime == null) lastPlayerTime = t;
-
-      const delta = t - lastPlayerTime;
-      lastPlayerTime = t;
-
-      if(delta > 0 && delta < 2.2){
-        pendingAddSeconds += delta;
-        watchSeconds = Math.floor((watchSeconds || 0) + delta);
-        localStorage.setItem("watch_seconds", String(watchSeconds));
-        if(statusCache?.ok) updateWatchUI(statusCache);
-      }
-
-      const now = Date.now();
-      if(pendingAddSeconds >= WATCH_BATCH_SECONDS || (now - lastSendAt) >= 5000){
-        const add = Math.floor(pendingAddSeconds);
-        if(add > 0 && sessionId){
-          pendingAddSeconds -= add;
-          await api("log_watch", { session_id: sessionId, add_seconds: String(add), events_json: "" });
-          const st = await fetchStatus(true);
-          if(st?.ok){ updateWatchUI(st); updateAttemptUI(st); }
-          await unlockQuizIfReady();
-        }
-        lastSendAt = now;
+      if(pendingAdd >= WATCH_SEND_EVERY_SECONDS){
+        await sendWatchIncrement();
       }
     } catch(err){
-      console.error("watchPoll error", err);
+      console.error(err);
     }
   }, 1000);
 }
 
-function stopWatchPoll(flush=false){
-  if(watchPoll){ clearInterval(watchPoll); watchPoll = null; }
-  if(flush){
-    const add = Math.floor(pendingAddSeconds);
-    pendingAddSeconds -= add;
-    if(add > 0 && sessionId){
-      api("log_watch", { session_id: sessionId, add_seconds: String(add), events_json:"" })
-        .then(()=>fetchStatus(true))
-        .then(st=>{ if(st?.ok){ updateWatchUI(st); updateAttemptUI(st); }})
-        .catch(console.error);
+async function flushSend(){
+  if(sendTick){ clearInterval(sendTick); sendTick = null; }
+  await sendWatchIncrement(true);
+}
+
+async function sendWatchIncrement(force=false){
+  const add = Math.floor(pendingAdd);
+  if(add <= 0 && !force) return;
+
+  if(add > 0){
+    pendingAdd -= add;
+    const r = await api("log_watch", { session_id: sessionId, add_seconds: String(add), events_json: "" });
+    if(!r?.ok){
+      // put back if failed
+      pendingAdd += add;
+      console.warn("log_watch failed:", r?.error);
+      return;
     }
   }
-  lastPlayerTime = null;
+
+  const st = await fetchStatus(true);
+  if(st?.ok){
+    updateWatchUI(st);
+    updateAttemptUI(st);
+    await unlockQuizIfReady();
+  }
 }
 
 /** auth */
@@ -257,31 +276,29 @@ function logout(){
   statusCache = null;
   lastStatusAt = 0;
 
-  stopWatchPoll(false);
   stopTimer();
-
-  goto(vLogin);
+  flushSend().catch(()=>{});
+  goto($("#view-login"));
 }
 $("#btn-logout")?.addEventListener("click", logout);
 $("#btn-logout-2")?.addEventListener("click", logout);
 
 /** hub init */
 async function initHub(){
-  if(!sessionId || !user){ goto(vLogin); return; }
+  if(!sessionId || !user){ goto($("#view-login")); return; }
 
   const nipp = user.nipp ? `NIPP ${user.nipp}` : "";
-  const meta = [user.unit].filter(Boolean).join(" · ");
-  userBadge.textContent = `${user.name}${meta ? " · " + meta : ""}`;
+  const meta = [nipp, user.unit, user.sub_unit].filter(Boolean).join(" · ");
+  $("#user-badge").textContent = `${user.name}${meta ? " · " + meta : ""}`;
 
-  goto(vHub);
+  goto($("#view-hub"));
 
   const st = await fetchStatus(true);
   if(st?.ok){
     updateWatchUI(st);
     updateAttemptUI(st);
-    if(st.locked) setQuizButtonLocked();
   } else {
-    setMsg(hubMsg, st?.error || "Gagal memuat status.", "bad");
+    setMsg($("#hub-msg"), st?.error || "Gagal memuat status.", "bad");
   }
 
   await unlockQuizIfReady();
@@ -290,62 +307,59 @@ async function initHub(){
 /** takeaways */
 $("#btn-save-takeaways")?.addEventListener("click", async () => {
   const text = ($("#takeaways").value || "").trim();
-  if(text.length < 10) return setMsg(hubMsg, "Takeaways terlalu pendek. Tambahkan poin yang lebih jelas.", "bad");
+  if(text.length < 10) return setMsg($("#hub-msg"), "Key takeaways terlalu pendek. Tambahkan poin yang lebih jelas.", "bad");
 
-  setMsg(hubMsg, "Menyimpan takeaways...", "");
+  setMsg($("#hub-msg"), "Menyimpan key takeaways...", "");
   const r = await api("save_takeaways", { session_id: sessionId, takeaways_text: text });
-  if(!r?.ok) return setMsg(hubMsg, "Gagal menyimpan: " + (r?.error || "Unknown"), "bad");
+  if(!r?.ok) return setMsg($("#hub-msg"), "Gagal menyimpan: " + (r?.error || "Unknown"), "bad");
 
   takeawaysSaved = true;
-  setMsg(hubMsg, "Takeaways tersimpan ✅", "ok");
+  setMsg($("#hub-msg"), "Key takeaways tersimpan ✅", "ok");
   await unlockQuizIfReady();
 });
 
 /** quiz */
 $("#btn-cancel-quiz")?.addEventListener("click", () => {
   stopTimer();
-  goto(vHub);
+  goto($("#view-hub"));
 });
 
 $("#btn-start-quiz")?.addEventListener("click", async () => {
   const st = await fetchStatus(true);
-  if(!st?.ok) return setMsg(hubMsg, st?.error || "Gagal cek status.", "bad");
+  if(!st?.ok) return setMsg($("#hub-msg"), st?.error || "Gagal cek status.", "bad");
 
   if(st.locked){
-    setQuizButtonLocked();
-    return setMsg(hubMsg, "Attempt sudah 3x. Silakan lihat leaderboard.", "bad");
+    $("#btn-start-quiz").disabled = true;
+    return setMsg($("#hub-msg"), "Attempt sudah 3x. Silakan lihat leaderboard.", "bad");
   }
   if(!st.qualified){
     const minM = Math.floor((st.min_watch_seconds||0)/60);
-    return setMsg(hubMsg, `Belum memenuhi syarat menonton. Minimal ${minM} menit.`, "bad");
+    return setMsg($("#hub-msg"), `Belum memenuhi syarat menonton. Minimal ${minM} menit.`, "bad");
   }
   if(!takeawaysSaved){
-    return setMsg(hubMsg, "Simpan takeaways dulu sebelum mulai quiz.", "bad");
+    return setMsg($("#hub-msg"), "Simpan key takeaways dulu sebelum mulai quiz.", "bad");
   }
-
   await startQuiz();
 });
 
 async function startQuiz(){
-  setMsg(hubMsg, "Menyiapkan quiz...", "");
+  setMsg($("#hub-msg"), "Menyiapkan quiz...", "");
   const r = await api("get_quiz", { session_id: sessionId, n: String(QUIZ_QUESTIONS) });
-  if(!r?.ok) return setMsg(hubMsg, "Gagal memuat quiz: " + (r?.error || "Unknown"), "bad");
+  if(!r?.ok) return setMsg($("#hub-msg"), "Gagal memuat quiz: " + (r?.error || "Unknown"), "bad");
 
   quiz = r.questions || [];
   quizIdx = 0;
   answers = [];
   quizStartTs = Date.now();
 
-  // attempt info from server
-  attemptNo = Number(r.attempt_no || attemptNo || 1);
-  quizAttemptPill.textContent = `Attempt: ${attemptNo} / ${Number(r.max_attempts || 3)}`;
+  $("#quiz-attempt").textContent = `Attempt: ${Number(r.attempt_no || 1)} / ${Number(r.max_attempts || 3)}`;
 
-  goto(vQuiz);
+  goto($("#view-quiz"));
   renderQuestion();
 }
 
 function renderQuestion(){
-  setMsg(quizMsg, "", "");
+  setMsg($("#quiz-msg"), "", "");
   const box = $("#q-box");
   const q = quiz[quizIdx];
   if(!q) return finishQuiz();
@@ -416,7 +430,7 @@ function stopTimer(){
 
 async function finishQuiz(){
   const durationSeconds = Math.round((Date.now() - quizStartTs)/1000);
-  setMsg(quizMsg, "Mengirim jawaban & menghitung skor...", "");
+  setMsg($("#quiz-msg"), "Mengirim jawaban & menghitung skor...", "");
 
   const r = await api("submit_score", {
     session_id: sessionId,
@@ -425,11 +439,10 @@ async function finishQuiz(){
   });
 
   if(!r?.ok){
-    setMsg(quizMsg, "Gagal submit: " + (r?.error || "Unknown"), "bad");
+    setMsg($("#quiz-msg"), "Gagal submit: " + (r?.error || "Unknown"), "bad");
     return;
   }
 
-  // result
   const rb = $("#result-box");
   rb.classList.remove("hidden");
   rb.innerHTML = `
@@ -438,27 +451,17 @@ async function finishQuiz(){
     <div class="subtle">Attempts used: ${r.attempts_used}/${r.max_attempts} · Best score kamu: ${r.best_score}</div>
   `;
 
-  // refresh status (locked maybe after 3)
-  const st = await fetchStatus(true);
-  if(st?.ok){
-    updateAttemptUI(st);
-    if(st.locked) setQuizButtonLocked();
-  }
-
   await openLeaderboard();
 }
 
 /** leaderboard */
 $("#btn-open-leaderboard")?.addEventListener("click", async () => openLeaderboard());
-
 $("#btn-back-hub")?.addEventListener("click", async () => {
-  // jika masih ada attempt, boleh kembali
   const st = await fetchStatus(true);
   if(st?.ok && !st.locked){
-    goto(vHub);
+    goto($("#view-hub"));
     return;
   }
-  // locked => tetap di leaderboard
   await openLeaderboard();
 });
 
@@ -477,9 +480,9 @@ $("#btn-group-subunit")?.addEventListener("click", async () => {
 });
 
 async function openLeaderboard(){
-  stopWatchPoll(true);
   stopTimer();
-  goto(vLB);
+  await flushSend();
+  goto($("#view-leaderboard"));
   await loadLeaderboard(activeGroupBy);
 }
 
@@ -514,13 +517,11 @@ async function loadLeaderboard(groupBy="unit"){
   `).join("");
   $("#lb").innerHTML = head + rows;
 
-  // Top 5 unit based on top score
   const units = r.top5_units || [];
   $("#top5-units").innerHTML = units.length
     ? units.map(u => `<span class="chip"><b>#${u.rank}</b> ${escapeHtml(u.unit)} · top ${u.top_score}</span>`).join("")
     : `<span class="subtle">Belum ada data.</span>`;
 
-  // group ranking with completion% + top score
   const groups = r.top_groups || [];
   const gHead = `
     <div class="tr head simple">
@@ -546,17 +547,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   const btn = $("#btn-login");
   const uEl = $("#login-user");
   const pEl = $("#login-pass");
-
-  if(!btn || !uEl || !pEl || !loginMsg){
-    alert("DOM tidak lengkap: cek id btn-login/login-user/login-pass/login-msg");
-    return;
-  }
+  const loginMsg = $("#login-msg");
 
   btn.addEventListener("click", async () => {
     setMsg(loginMsg, "Memeriksa akun...", "");
     const u = uEl.value.trim();
     const p = pEl.value.trim();
-    if(!u || !p) return setMsg(loginMsg, "Lengkapi user dan password/token.", "bad");
+    if(!u || !p) return setMsg(loginMsg, "Lengkapi user dan password.", "bad");
 
     const r = await api("login", { user: u, password: p, ua: navigator.userAgent });
     if(!r?.ok) return setMsg(loginMsg, "Login gagal: " + (r?.error || "Unknown"), "bad");
@@ -573,6 +570,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     lastStatusAt = 0;
 
     await initHub();
+    initVideo();
   });
 
   [uEl, pEl].forEach(el => el.addEventListener("keydown", (ev) => {
@@ -582,14 +580,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   const ping = await api("ping", {});
   if(!ping?.ok){
     setMsg(loginMsg, "API belum bisa diakses: " + (ping?.error || "Unknown"), "bad");
-    goto(vLogin);
+    goto($("#view-login"));
     return;
   }
 
   if(sessionId && user){
     await initHub();
+    initVideo();
   } else {
-    goto(vLogin);
+    goto($("#view-login"));
   }
 });
-
