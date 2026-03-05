@@ -287,8 +287,8 @@ $("#btn-logout-2")?.addEventListener("click", logout);
 async function initHub(){
   if(!sessionId || !user){ goto($("#view-login")); return; }
 
-  const nipp = user.nipp ? `NIPP ${user.nipp}` : "";
-  const meta = [nipp, user.unit, user.sub_unit].filter(Boolean).join(" · ");
+  const nipp = user.nipp ? `NIPP ${user.nipp}` : " - ";
+  const meta = [user.unit].filter(Boolean).join(" · ");
   $("#user-badge").textContent = `${user.name}${meta ? " · " + meta : ""}`;
 
   goto($("#view-hub"));
@@ -591,4 +591,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     goto($("#view-login"));
   }
 });
+
 
