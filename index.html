@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Challenge Corner 2026</title>
-  <link rel="stylesheet" href="app.css?v=9" />
+  <link rel="stylesheet" href="app.css?v=10" />
 </head>
 <body>
   <div class="bg">
@@ -42,7 +42,7 @@
           <input id="login-user" placeholder="contoh: 1987xxxx / nama@pelindo.co.id" autocomplete="username" />
         </div>
         <div class="field">
-          <label>Password </label>
+          <label>Password</label>
           <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password" />
         </div>
 
@@ -72,12 +72,11 @@
         </div>
 
         <div class="videoShell">
-          <iframe
-            id="yt"
-            title="Video Arahan Direktur Utama Pelindo"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen></iframe>
+          <!-- HTML5 video (agar bisa tracking currentTime/duration) -->
+          <video id="video" class="videoTag" controls playsinline preload="metadata">
+            <source id="video-src" src="" type="video/mp4">
+            Browser kamu tidak mendukung pemutaran video.
+          </video>
         </div>
 
         <div class="watchBar">
@@ -100,6 +99,11 @@
             <div id="progress-fill" class="progressFill" style="width:0%"></div>
           </div>
           <div class="progressText" id="progress-text">0% dari total durasi video</div>
+
+          <div id="video-msg" class="msg mt10"></div>
+          <div class="subtle mt8">
+            Jika video tidak bisa diputar, kemungkinan link bukan direct mp4. Ambil “Embed code” dari SharePoint atau gunakan link file mp4 langsung.
+          </div>
         </div>
       </section>
 
@@ -196,8 +200,6 @@
     <span>© Change Management PT Pelabuhan Indonesia (Persero) · 2026</span>
   </footer>
 
-  <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>
-
