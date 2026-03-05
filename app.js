@@ -448,8 +448,8 @@ async function finishQuiz(){
   rb.classList.remove("hidden");
   rb.innerHTML = `
     <div style="font-size:18px;font-weight:900">Skor attempt #${r.attempt_no}: ${r.total_score}</div>
-    <div class="subtle">Base: ${r.base_score} · Bonus: ${r.bonus_score} · Benar: ${r.correctCount}/${r.total}</div>
-    <div class="subtle">Attempts used: ${r.attempts_used}/${r.max_attempts} · Best score kamu: ${r.best_score}</div>
+    <div class="subtle">Base: ${r.base_score} · Bonus: ${r.bonus_score} · Speed: ${r.speed_score}</div>
+    <div class="subtle">Benar: ${r.correctCount}/${r.total} · Attempts used: ${r.attempts_used}/${r.max_attempts} · Best: ${r.best_score}</div>
   `;
 
   await openLeaderboard();
@@ -592,6 +592,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     goto($("#view-login"));
   }
 });
+
 
 
 
