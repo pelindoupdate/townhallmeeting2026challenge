@@ -11,8 +11,8 @@ const ONEDRIVE_SHARE_URL =
   // "https://pelindo2-my.sharepoint.com/:v:/g/personal/pmo_pelindo_co_id/IQA7HhaxUZQSSJQ5Yck7x9PEAY8ojY5w6x2HADIY57Btw0A?e=ASU4xN&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D";
   // "https://pelindo2-my.sharepoint.com/:v:/g/personal/pmo_pelindo_co_id/IQAT-nk2KETNQLz3J93mxRr5AQA7Rema50rmnWtP2zSRhXw?e=D5PI9a&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D";
   "https://pelindo2-my.sharepoint.com/:v:/g/personal/pmo_pelindo_co_id/IQBc8eWqNrCrRr68NAyT3_vUAWu0wHygsGNQrPmwIEYUUIc?e=QDFfp0&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D";
-const QUIZ_QUESTIONS = 10;
-const QUIZ_TIMER_SECONDS = 20;
+const QUIZ_QUESTIONS = 15;
+const QUIZ_TIMER_SECONDS = 60;
 
 // watch batching
 const WATCH_SEND_EVERY_SECONDS = 5;
@@ -592,6 +592,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     goto($("#view-login"));
   }
 });
+
 
 
 
