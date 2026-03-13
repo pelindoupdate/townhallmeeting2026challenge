@@ -4,7 +4,7 @@
  * - Send incremental add_seconds to Apps Script action=log_watch
  */
 
-const API_URL = "https://script.google.com/macros/s/AKfycbwp7PQpsMdlJr1bxOKK8kOm-flAF4facOuhp3e9HyaeSOKOGvvgOI5gaCXa6rrP6adePw/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxhDz4ekglzCQ6FZHUq76meS1WXgt_NQ3JOmx_1ghfy9UIbAAfRxqJCi3Eqy4bOj3O9GA/exec";
 
 // Share link (viewer). Akan dicoba jadi direct stream url sederhana.
 const ONEDRIVE_SHARE_URL =
@@ -592,6 +592,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     goto($("#view-login"));
   }
 });
+
 
 
 
